@@ -9,7 +9,7 @@ py-tui-2048 is the popular 2048 game written with the curses library in python.
 
 ## Compatibility
 The current version is not compatible with windows due to windows not having curses.
-The game was created using python 3.13, and it may not work with older versions
+The game was created using python 3.13, and it may not work with older versions.
 
 ## License
 py-tui-2048 is licensed under the WTFPL License.
