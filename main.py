@@ -33,7 +33,8 @@ class Game(object):
         
         self.score = 0
 
-        self.save_data = {'highscore': 0}
+        self.save_data = {'highscore': 0,
+                          'tile_highscore': 2}
 
         try:
             with open('save.json', 'r', encoding='UTF-8') as save_file:
@@ -53,9 +54,8 @@ class Game(object):
 
     def draw_grid(self: object) -> None:
 
-        for y in range(self.grid_size[1]):
-            for x in range(self.grid_size[0]):
-                item = self.grid.grid[y][x]
+        for y, row in enumerate(self.grid.grid):
+            for x, item in enumerate(row):
                 item_str = str(item)
                 try:
                     self.stdscr.addstr(self.grid_pos[1] + y * self.cell_size[1],
@@ -126,7 +126,7 @@ class Game(object):
 
         # score
         try:
-            self.stdscr.addstr(self.grid_pos[1] + 3, self.grid_pos[0]
+            self.stdscr.addstr(self.grid_pos[1] + 5, self.grid_pos[0]
                                + self.grid_size[0] * self.cell_size[0] + 5,
                                f'{self.texts['score']}{self.score}')
         except curses.error:
@@ -134,9 +134,17 @@ class Game(object):
         
         # highscore
         try:
-            self.stdscr.addstr(self.grid_pos[1] + 1, self.grid_pos[0]
+            self.stdscr.addstr(self.grid_pos[1] + 3, self.grid_pos[0]
                                + self.grid_size[0] * self.cell_size[0] + 5,
                                f'{self.texts['highscore']}{self.save_data['highscore']}')
+        except curses.error:
+            pass
+
+        # highest tile
+        try:
+            self.stdscr.addstr(self.grid_pos[1] + 1, self.grid_pos[0]
+                               + self.grid_size[0] * self.cell_size[0] + 5,
+                               f'{self.texts['tile_highscore']}{self.save_data['tile_highscore']}')
         except curses.error:
             pass
         
@@ -168,6 +176,11 @@ class Game(object):
                 if self.score > self.save_data['highscore']:
                     self.save_data['highscore'] = self.score
                     self.save_save_data_to_file()
+                for row in self.grid.grid:
+                    for item in row:
+                        if item > self.save_data['tile_highscore']:
+                            self.save_data['tile_highscore'] = item
+                            self.save_save_data_to_file()
                 self.stdscr.erase()
                 self.render_text()
                 self.draw_grid()
@@ -178,7 +191,8 @@ class Game(object):
             curses.endwin()
             print(f'{self.texts['stats']}\n'
                   f' - {self.texts['score']}{self.score}\n' \
-                  f' - {self.texts['highscore']}{self.save_data['highscore']}')
+                  f' - {self.texts['highscore']}{self.save_data['highscore']}\n' \
+                  f' - {self.texts['tile_highscore']}{self.save_data['tile_highscore']}')
             sys.exit()
 
 
