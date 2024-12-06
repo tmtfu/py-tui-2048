@@ -147,7 +147,7 @@ class Game(object):
             and self.grid.right() == self.grid.grid):
             try:
                 self.stdscr.addstr(self.grid_pos[1] + self.grid_size[1] 
-                                   * self.cell_size[1] + 1, self.grid_pos[0] + 4,
+                                   * self.cell_size[1] + 1, self.grid_pos[0] + 6,
                                    self.texts['death'])
             except curses.error:
                 pass
@@ -155,7 +155,7 @@ class Game(object):
     def run(self: object) -> None:
 
         running = 1
-
+        
         self.reset()
         self.render_text()
         

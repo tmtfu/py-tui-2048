@@ -48,11 +48,30 @@ class Grid(object):
              value: tuple[int]) -> None:
 
         if type(value) != tuple or len(value) != 2:
-            raise ValueError('size needs to be (int length, int height).')
+            raise ValueError('size needs to be tuple[int length, int height].')
         for item in value:
             if type(item) != int:
-                raise ValueError('size needs to be (int length, int height).')
-        
+                raise ValueError('size needs to be tuple[int length, int height].')
+            elif item <= 0:
+                raise ValueError('size needs to be at least tuple[1, 1].')
+
+        if value[0] >= self._size[0]:
+            for row in self._grid:
+                for x in range(self._size[0], value[0]):
+                    row.append(0)
+        else:
+            for row in self._grid:
+                print(row)
+                for x in range(self._size[0] - 1, value[0] - 1, -1):
+                    del row[x]
+
+        if value[1] >= self._size[1]:
+            for y in range(self._size[1], value[1]):
+                self._grid.append([0] * value[0])
+        else:
+            for y in range(self._size[0] - 1, value[1] - 1, -1):
+                del self._grid[y]
+                
         self._size = value
 
     def _create_grid(self: object,
