@@ -33,6 +33,8 @@ class Game(object):
         
         self.score = 0
 
+        self.dead = 0
+
         self.save_data = {'highscore': 0,
                           'tile_highscore': 2}
 
@@ -79,28 +81,28 @@ class Game(object):
 
         name = curses.keyname(key_code)
 
-        if str(name) in ("b'w'", "b'k'", "b'KEY_UP'"):
+        if not self.dead and str(name) in ("b'w'", "b'k'", "b'KEY_UP'"):
             return_value = self.grid.up(1)
             self.grid.grid = return_value[0]
             self.score += return_value[1]
             if self.grid.grid != original_grid:
                 self.grid.spawn_new_numbers(1, self.spawn_choices, self.spawn_rates)
 
-        elif str(name) in ("b's'", "b'j'", "b'KEY_DOWN'"):
+        elif not self.dead and str(name) in ("b's'", "b'j'", "b'KEY_DOWN'"):
             return_value = self.grid.down(1)
             self.grid.grid = return_value[0]
             self.score += return_value[1]
             if self.grid.grid != original_grid:
                 self.grid.spawn_new_numbers(1, self.spawn_choices, self.spawn_rates)
 
-        elif str(name) in ("b'a'", "b'h'", "b'KEY_LEFT'"):
+        elif not self.dead and str(name) in ("b'a'", "b'h'", "b'KEY_LEFT'"):
             return_value = self.grid.left(1)
             self.grid.grid = return_value[0]
             self.score += return_value[1]
             if self.grid.grid != original_grid:
                 self.grid.spawn_new_numbers(1, self.spawn_choices, self.spawn_rates)
 
-        elif str(name) in ("b'd'", "b'l'", "b'KEY_RIGHT'"):
+        elif not self.dead and str(name) in ("b'd'", "b'l'", "b'KEY_RIGHT'"):
             return_value = self.grid.right(1)
             self.grid.grid = return_value[0]
             self.score += return_value[1]
@@ -116,6 +118,7 @@ class Game(object):
         self.grid.spawn_new_numbers(2, (self.spawn_choices[0],))
         
         self.score = 0
+        self.dead = 0
 
     def render_text(self: object) -> None:
 
@@ -149,10 +152,11 @@ class Game(object):
             pass
         
         # death
-        if (self.grid.up() == self.grid.grid
-            and self.grid.down() == self.grid.grid
-            and self.grid.left() == self.grid.grid
-            and self.grid.right() == self.grid.grid):
+        self.dead = (self.grid.up() == self.grid.grid
+                     and self.grid.down() == self.grid.grid
+                     and self.grid.left() == self.grid.grid
+                     and self.grid.right() == self.grid.grid)
+        if self.dead:
             try:
                 self.stdscr.addstr(self.grid_pos[1] + self.grid_size[1] 
                                    * self.cell_size[1] + 1, self.grid_pos[0] + 6,
