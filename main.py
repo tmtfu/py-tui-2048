@@ -176,7 +176,7 @@ class Game(object):
         except KeyboardInterrupt:
             self.save_save_data_to_file()
             curses.endwin()
-            print(f'{self.texts['score']}{self.score}; ' +
+            print(f'{self.texts['score']}{self.score}\n' \
                   f'{self.texts['highscore']}{self.save_data['highscore']}')
             sys.exit()
 
