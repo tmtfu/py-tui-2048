@@ -116,17 +116,14 @@ class Game(object):
         self.grid.reset()
         self.grid.spawn_new_numbers(2, (self.spawn_choices[0],))
         
-        # clears old text
-        try:
-            self.stdscr.addstr(self.grid_pos[1] + 3, self.grid_pos[0]
-                               + self.grid_size[0] * self.cell_size[0] + 5,
-                               ' ' * (len(self.texts['score']) + len(str(self.score))))
-        except curses.error:
-            pass
-
         self.score = 0
 
-    def update_and_render_dynamic_text(self: object) -> None:
+    def render_text(self: object) -> None:
+
+        try:
+            self.stdscr.addstr(1, 2, self.texts['info'])
+        except curses.error:
+            pass
 
         # score
         try:
@@ -137,9 +134,6 @@ class Game(object):
             pass
         
         # highscore
-        if self.score > self.save_data['highscore']:
-            self.save_data['highscore'] = self.score
-            self.save_save_data_to_file()
         try:
             self.stdscr.addstr(self.grid_pos[1] + 1, self.grid_pos[0]
                                + self.grid_size[0] * self.cell_size[0] + 5,
@@ -159,24 +153,12 @@ class Game(object):
             except curses.error:
                 pass
 
-        else:
-            try:
-                self.stdscr.addstr(self.grid_pos[1] + self.grid_size[1] 
-                                   * self.cell_size[1] + 1, self.grid_pos[0] + 4,
-                                   ' ' * len(self.texts['death']))
-            except curses.error:
-                pass
-
     def run(self: object) -> None:
 
         running = 1
 
         self.reset()
-        try:
-            self.stdscr.addstr(1, 2, self.texts['info'])
-        except curses.error:
-            pass
-        self.update_and_render_dynamic_text()
+        self.render_text()
         
         self.draw_grid()
         
@@ -184,7 +166,11 @@ class Game(object):
             while running:
                 key = self.stdscr.getch()
                 self.handle_key_input(key)
-                self.update_and_render_dynamic_text()
+                if self.score > self.save_data['highscore']:
+                    self.save_data['highscore'] = self.score
+                    self.save_save_data_to_file()
+                self.stdscr.erase()
+                self.render_text()
                 self.draw_grid()
                 self.stdscr.refresh()
 
