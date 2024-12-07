@@ -24,6 +24,7 @@ class Game(object):
         self.base = 2
         self.spawn_choices = (self.base, self.base**2)
         self.spawn_rates = (90, 10)
+        self.winning_power = 11
 
         self.grid_size = (4, 4)
         self.grid_pos = (13, 4)
@@ -33,7 +34,11 @@ class Game(object):
         
         self.score = 0
 
-        self.dead = 0
+        # dead = 0
+        # playing = 1
+        # won the game (on select screen) = 2
+        # endless mode = 3
+        self.game_state = 1
 
         self.save_data = {'highscore': 0,
                           'tile_highscore': 2}
@@ -44,9 +49,8 @@ class Game(object):
         except FileNotFoundError:
             self.save_save_data_to_file()
 
-        # texts
-        with open('text.json', 'r', encoding='UTF-8') as save_file:
-            self.texts = json.load(save_file)
+        with open('texts.json', 'r', encoding='UTF-8') as texts_file:
+            self.texts = json.load(texts_file)
 
     def save_save_data_to_file(self: object) -> None:
         'Saves the player\'s save data to the data/save/save.json file'
@@ -65,8 +69,8 @@ class Game(object):
 
                                   # the * (self.cell_size[0] - 1) is to clear numbers 
                                   item_str + ' ' * (self.cell_size[0] - len(item_str))
-                                  if item else self.texts['empty_tile'] + ' '
-                                  * (self.cell_size[0] - len(self.texts['empty_tile'])),
+                                  if item else self.texts['empty_tile'] + ' ' * 
+                                    (self.cell_size[0] - len(self.texts['empty_tile'])),
 
                                   curses.color_pair(
                                       int(min(math.log(item, self.base), 7) if item else 0)))
@@ -80,37 +84,42 @@ class Game(object):
         original_grid = self.grid.grid
 
         name = curses.keyname(key_code)
+        if self.game_state == 1 or self.game_state == 3:
+            if str(name) in ("b'w'", "b'k'", "b'KEY_UP'"):
+                return_value = self.grid.up(1)
+                self.grid.grid = return_value[0]
+                self.score += return_value[1]
+                if self.grid.grid != original_grid:
+                    self.grid.spawn_new_numbers(1, self.spawn_choices, self.spawn_rates)
 
-        if not self.dead and str(name) in ("b'w'", "b'k'", "b'KEY_UP'"):
-            return_value = self.grid.up(1)
-            self.grid.grid = return_value[0]
-            self.score += return_value[1]
-            if self.grid.grid != original_grid:
-                self.grid.spawn_new_numbers(1, self.spawn_choices, self.spawn_rates)
+            elif str(name) in ("b's'", "b'j'", "b'KEY_DOWN'"):
+                return_value = self.grid.down(1)
+                self.grid.grid = return_value[0]
+                self.score += return_value[1]
+                if self.grid.grid != original_grid:
+                    self.grid.spawn_new_numbers(1, self.spawn_choices, self.spawn_rates)
 
-        elif not self.dead and str(name) in ("b's'", "b'j'", "b'KEY_DOWN'"):
-            return_value = self.grid.down(1)
-            self.grid.grid = return_value[0]
-            self.score += return_value[1]
-            if self.grid.grid != original_grid:
-                self.grid.spawn_new_numbers(1, self.spawn_choices, self.spawn_rates)
+            elif str(name) in ("b'a'", "b'h'", "b'KEY_LEFT'"):
+                return_value = self.grid.left(1)
+                self.grid.grid = return_value[0]
+                self.score += return_value[1]
+                if self.grid.grid != original_grid:
+                    self.grid.spawn_new_numbers(1, self.spawn_choices, self.spawn_rates)
 
-        elif not self.dead and str(name) in ("b'a'", "b'h'", "b'KEY_LEFT'"):
-            return_value = self.grid.left(1)
-            self.grid.grid = return_value[0]
-            self.score += return_value[1]
-            if self.grid.grid != original_grid:
-                self.grid.spawn_new_numbers(1, self.spawn_choices, self.spawn_rates)
-
-        elif not self.dead and str(name) in ("b'd'", "b'l'", "b'KEY_RIGHT'"):
-            return_value = self.grid.right(1)
-            self.grid.grid = return_value[0]
-            self.score += return_value[1]
-            if self.grid.grid != original_grid:
-                self.grid.spawn_new_numbers(1, self.spawn_choices, self.spawn_rates)
+            elif str(name) in ("b'd'", "b'l'", "b'KEY_RIGHT'"):
+                return_value = self.grid.right(1)
+                self.grid.grid = return_value[0]
+                self.score += return_value[1]
+                if self.grid.grid != original_grid:
+                    self.grid.spawn_new_numbers(1, self.spawn_choices, self.spawn_rates)
+        
+        elif self.game_state and str(name) == "b'c'":
+            self.game_state = 3
 
         if str(name) == "b'r'":
             self.reset()
+
+        
 
     def reset(self: object) -> None:
 
@@ -118,12 +127,14 @@ class Game(object):
         self.grid.spawn_new_numbers(2, (self.spawn_choices[0],))
         
         self.score = 0
-        self.dead = 0
+        self.game_state = 1
 
     def render_text(self: object) -> None:
 
         try:
-            self.stdscr.addstr(1, 2, self.texts['info'])
+            self.stdscr.addstr(1, int(self.grid_pos[0] + (self.grid_size[0] * self.cell_size[0]
+                               - len(self.texts['info'].splitlines()[0])) / 2) - 2,
+                               self.texts['info'])
         except curses.error:
             pass
 
@@ -152,15 +163,25 @@ class Game(object):
             pass
         
         # death
-        self.dead = (self.grid.up() == self.grid.grid
-                     and self.grid.down() == self.grid.grid
-                     and self.grid.left() == self.grid.grid
-                     and self.grid.right() == self.grid.grid)
-        if self.dead:
+        if not self.game_state:
             try:
-                self.stdscr.addstr(self.grid_pos[1] + self.grid_size[1] 
-                                   * self.cell_size[1] + 1, self.grid_pos[0] + 6,
+                self.stdscr.addstr(self.grid_pos[1] + self.grid_size[1] * self.cell_size[1] + 1,
+                                   int(self.grid_pos[0] + (self.grid_size[0] * self.cell_size[0]
+                                        - len(self.texts['death'].splitlines()[0])) / 2) - 1,
+                                   # splitlines()[0] to get the first line ^
+                                   # the code for the x coord above centers the text below the grid
                                    self.texts['death'])
+            except curses.error:
+                pass
+
+        elif self.game_state == 2:
+            try:
+                self.stdscr.addstr(self.grid_pos[1] + self.grid_size[1] * self.cell_size[1] + 1,
+                                   int(self.grid_pos[0] + (self.grid_size[0] * self.cell_size[0]
+                                        - len(self.texts['win'].splitlines()[0])) / 2) - 2,
+                                   # splitlines()[0] to get the first line ^
+                                   # the code for the x coord above centers the text below the grid
+                                   self.texts['win'])
             except curses.error:
                 pass
 
@@ -170,21 +191,36 @@ class Game(object):
         
         self.reset()
         self.render_text()
-        
+
         self.draw_grid()
         
         try:
             while running:
                 key = self.stdscr.getch()
                 self.handle_key_input(key)
+
+                if (self.grid.up() == self.grid.grid
+                    and self.grid.down() == self.grid.grid
+                    and self.grid.left() == self.grid.grid
+                    and self.grid.right() == self.grid.grid):
+
+                    self.game_state = 0 # dead
+                # i use an if statement so that it won't become 1
+                # if the condition is not satisfied; it will tay unchanged
+
                 if self.score > self.save_data['highscore']:
                     self.save_data['highscore'] = self.score
                     self.save_save_data_to_file()
+
                 for row in self.grid.grid:
                     for item in row:
                         if item > self.save_data['tile_highscore']:
                             self.save_data['tile_highscore'] = item
                             self.save_save_data_to_file()
+                        # I add the == 1 so it doesn't overwrite the game_state if it is 3
+                        if item >= self.base**self.winning_power and self.game_state == 1:
+                            self.game_state = 2
+
                 self.stdscr.erase()
                 self.render_text()
                 self.draw_grid()
@@ -193,16 +229,14 @@ class Game(object):
         except KeyboardInterrupt:
             self.save_save_data_to_file()
             curses.endwin()
-            print(f'{self.texts['stats']}\n'
-                  f' - {self.texts['score']}{self.score}\n' \
-                  f' - {self.texts['highscore']}{self.save_data['highscore']}\n' \
-                  f' - {self.texts['tile_highscore']}{self.save_data['tile_highscore']}')
-            sys.exit()
 
+            print(f'{self.texts['stats']}',
+                  f' - {self.texts['score']}{self.score}',
+                  f' - {self.texts['highscore']}{self.save_data['highscore']}',
+                  f' - {self.texts['tile_highscore']}{self.save_data['tile_highscore']}', sep='\n')
 
-def main(stdscr):
-    Game(stdscr).run()
 
 if __name__ == '__main__':
-    curses.wrapper(main)
+    stdscr = curses.initscr()
+    Game(stdscr).run()
 

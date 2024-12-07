@@ -133,7 +133,7 @@ class Grid(object):
                     return_grid[current_y][x] = 0
                     current_y -= 1
                 # checks for combining numbers
-                if (current_y > 0 and not combined_statuses[y][current_y - 1]
+                if (current_y > 0 and not combined_statuses[current_y - 1][x]
                     and unchanged_value == return_grid[current_y - 1][x]):
 
                     return_grid[current_y - 1][x] = unchanged_value * 2
