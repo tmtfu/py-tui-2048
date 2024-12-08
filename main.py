@@ -1,9 +1,9 @@
-import sys
 import math
 import json
 import curses 
-import grid
+import modules.grid as grid
 
+# v1.0.1
 
 class Game(object):
     
@@ -54,13 +54,13 @@ class Game(object):
         with open('texts.json', 'r', encoding='UTF-8') as texts_file:
             self.texts = json.load(texts_file)
 
-    def save_save_data_to_file(self: object) -> None:
+    def _save_save_data_to_file(self: object) -> None:
         'Saves the player\'s save data to the data/save/save.json file'
 
         with open('save.json', 'w', encoding='UTF-8') as save_file:
             json.dump(self.save_data, save_file)
 
-    def draw_grid(self: object) -> None:
+    def _draw_grid(self: object) -> None:
 
         for y, row in enumerate(self.grid.grid):
             for x, item in enumerate(row):
@@ -79,8 +79,8 @@ class Game(object):
                 except curses.error:
                     pass
 
-    def handle_key_input(self: object,
-                         key: str) -> None:
+    def _handle_key_input(self: object,
+                          key: str) -> None:
 
         original_grid = self.grid.grid
 
@@ -117,9 +117,9 @@ class Game(object):
             self.game_state = 3
 
         if key == 'r':
-            self.reset()
+            self._reset()
 
-    def reset(self: object) -> None:
+    def _reset(self: object) -> None:
 
         self.grid.reset()
         self.grid.spawn_new_numbers(2, (self.spawn_choices[0],))
@@ -127,7 +127,7 @@ class Game(object):
         self.score = 0
         self.game_state = 1
 
-    def render_text(self: object) -> None:
+    def _render_text(self: object) -> None:
         
         # The try and excepts are to prevent curses from raising an error when it tries to write outside of the terminal
         try:
@@ -188,15 +188,15 @@ class Game(object):
 
         running = 1
         
-        self.reset()
-        self.render_text()
+        self._reset()
 
-        self.draw_grid()
-        
+        self._render_text()
+        self._draw_grid()
+
         try:
             while running:
                 key = self.stdscr.getkey()
-                self.handle_key_input(key)
+                self._handle_key_input(key)
 
                 if (self.grid.up() == self.grid.grid
                     and self.grid.down() == self.grid.grid
@@ -206,28 +206,28 @@ class Game(object):
                     self.game_state = 0 # dead
                 # i use an if statement so that it won't become 1
                 # if the condition is not satisfied; it will tay unchanged
-
                 if self.score > self.save_data['highscore']:
                     self.save_data['highscore'] = self.score
-                    self.save_save_data_to_file()
+                    self._save_save_data_to_file()
 
                 for row in self.grid.grid:
                     for item in row:
                         if item > self.save_data['tile_highscore']:
                             self.save_data['tile_highscore'] = item
-                            self.save_save_data_to_file()
+                            self._save_save_data_to_file()
                         # I add the == 1 so it doesn't overwrite the game_state if it is 3
                         if item >= self.base**self.winning_power and self.game_state == 1:
                             self.game_state = 2
 
                 self.stdscr.erase()
-                self.render_text()
-                self.draw_grid()
+                self._render_text()
+                self._draw_grid()
                 self.stdscr.refresh()
 
         except KeyboardInterrupt:
-            self.save_save_data_to_file()
+            pass
 
+        finally:
             curses.endwin()
 
             print(f'{self.texts['stats']}',
