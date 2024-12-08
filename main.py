@@ -49,7 +49,7 @@ class Game(object):
             with open('save.json', 'r', encoding='UTF-8') as save_file:
                 self.save_data = json.load(save_file)
         except FileNotFoundError:
-            self.save_save_data_to_file()
+            self._save_save_data_to_file()
 
         with open('texts.json', 'r', encoding='UTF-8') as texts_file:
             self.texts = json.load(texts_file)
