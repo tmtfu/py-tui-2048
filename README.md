@@ -4,6 +4,7 @@ py-tui-2048 is the popular 2048 game written with the curses library in python.
 ## Features
 - Restart with `<r>`
 - Quit with `<Ctrl-c>`
+- Continue playing after winning with `<c>`
 - Support for Arrow Keys, WASD, and HJKL (Vim Keybindings)
 - Highscore saves
 
