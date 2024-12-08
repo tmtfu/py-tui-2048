@@ -29,8 +29,8 @@ class Grid(object):
             # if size was different, it would catch (obvious)
             # if length was different from other rows, then at least one row is not the correct row length
 
-            if (len(value), len(row)) != self._size:
-                raise ValueError('new grid needs to be the same size as was last set ' +
+            if (len(row), len(value)) != self._size:
+                raise ValueError('new grid needs to be the same size as was last set ' \
                                  'and the length of all rows should be the same.')
             for item in row:
                 if type(item) != int:
@@ -83,7 +83,7 @@ class Grid(object):
         return grid
 
     def reset(self: object) -> None:
-        self.grid = self._create_grid(self._size)
+        self._grid = self._create_grid(self._size)
 
     def spawn_new_numbers(self: object, 
                           count: int,
