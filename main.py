@@ -13,46 +13,51 @@ class Game(object):
         # when you resize to small, it will do raise an error
         
         self.stdscr = curses.initscr()
-        self.stdscr.keypad(1)
-        curses.noecho()
-        curses.cbreak()
-        curses.curs_set(0)
-        curses.start_color()
-        curses.use_default_colors()
-
-        for i in range(curses.COLORS):
-            curses.init_pair(i, i, -1);
-        
-        self.base = 2
-        self.spawn_choices = (self.base, self.base**2)
-        self.spawn_rates = (90, 10)
-        self.winning_power = 11
-
-        self.grid_size = (4, 4)
-        self.grid_pos = (13, 4)
-        self.cell_size = (6, 2)
-
-        self.grid = grid.Grid(self.grid_size)
-        
-        self.score = 0
-
-        # dead = 0
-        # playing = 1
-        # won the game (on select screen) = 2
-        # endless mode = 3
-        self.game_state = 1
-
-        self.save_data = {'highscore': 0,
-                          'tile_highscore': 2}
 
         try:
-            with open('save.json', 'r', encoding='UTF-8') as save_file:
-                self.save_data = json.load(save_file)
-        except FileNotFoundError:
-            self._save_save_data_to_file()
+            self.stdscr.keypad(1)
+            curses.noecho()
+            curses.cbreak()
+            curses.curs_set(0)
+            curses.start_color()
+            curses.use_default_colors()
 
-        with open('texts.json', 'r', encoding='UTF-8') as texts_file:
-            self.texts = json.load(texts_file)
+            for i in range(curses.COLORS):
+                curses.init_pair(i, i, -1);
+            
+            self.base = 2
+            self.spawn_choices = (self.base, self.base**2)
+            self.spawn_rates = (90, 10)
+            self.winning_power = 11
+
+            self.grid_size = (4, 4)
+            self.grid_pos = (13, 4)
+            self.cell_size = (6, 2)
+
+            self.grid = grid.Grid(self.grid_size)
+            
+            self.score = 0
+
+            # dead = 0
+            # playing = 1
+            # won the game (on select screen) = 2
+            # endless mode = 3
+            self.game_state = 1
+
+            self.save_data = {'highscore': 0,
+                              'tile_highscore': 2}
+
+            try:
+                with open('save.json', 'r', encoding='UTF-8') as save_file:
+                    self.save_data = json.load(save_file)
+            except FileNotFoundError:
+                self.save_save_data_to_file()
+
+            with open('texts.json', 'r', encoding='UTF-8') as texts_file:
+                self.texts = json.load(texts_file)
+
+        finally:
+            curses.endwin()
 
     def _save_save_data_to_file(self: object) -> None:
         'Saves the player\'s save data to the data/save/save.json file'
@@ -188,12 +193,12 @@ class Game(object):
 
         running = 1
         
-        self._reset()
-
-        self._render_text()
-        self._draw_grid()
-
         try:
+            self._reset()
+
+            self._render_text()
+            self._draw_grid()
+
             while running:
                 key = self.stdscr.getkey()
                 self._handle_key_input(key)
