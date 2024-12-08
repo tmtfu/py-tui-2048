@@ -2,8 +2,9 @@ import math
 import json
 import curses 
 import modules.grid as grid
+from modules.utils import addstr_robust
 
-# v1.0.2
+# v1.0.3
 
 class Game(object):
     
@@ -55,6 +56,24 @@ class Game(object):
 
             with open('texts.json', 'r', encoding='UTF-8') as texts_file:
                 self.texts = json.load(texts_file)
+            
+            types = {'win': list,
+                     'empty_tile': str,
+                     'score': str,
+                     'highscore': str,
+                     'tile_highscore': str,
+                     'death': str,
+                     'info': str,
+                     'stats': str}
+
+            # type checking for texts.json
+            for key, value in self.texts.items():
+                value_type = type(value)
+                if value_type != types[key]:
+                    if types[key] == list:
+                        raise ValueError(f'value for "{key}" in text.json should be a list of str lines, not {types[key]}')
+                    else:
+                        raise ValueError(f'value for "{key}" in text.json should be of type {types[key]}, not {value_type}')
 
         finally:
             curses.endwin()
@@ -72,15 +91,15 @@ class Game(object):
                 item_str = str(item)
                 try:
                     self.stdscr.addstr(self.grid_pos[1] + y * self.cell_size[1],
-                                  self.grid_pos[0] + x * self.cell_size[0],
+                                       self.grid_pos[0] + x * self.cell_size[0],
 
-                                  # the * (self.cell_size[0] - 1) is to clear numbers 
-                                  item_str + ' ' * (self.cell_size[0] - len(item_str))
-                                  if item else self.texts['empty_tile'] + ' ' * 
-                                    (self.cell_size[0] - len(self.texts['empty_tile'])),
+                                       # the * (self.cell_size[0] - 1) is to clear numbers 
+                                       item_str + ' ' * (self.cell_size[0] - len(item_str))
+                                       if item else self.texts['empty_tile'] + ' ' * 
+                                         (self.cell_size[0] - len(self.texts['empty_tile'])),
 
-                                  curses.color_pair(
-                                      int(min(math.log(item, self.base), 7) if item else 0)))
+                                       curses.color_pair(
+                                           int(min(math.log(item, self.base), 7) if item else 0)))
                 except curses.error:
                     pass
 
@@ -135,65 +154,48 @@ class Game(object):
     def _render_text(self: object) -> None:
         
         # The try and excepts are to prevent curses from raising an error when it tries to write outside of the terminal
-        try:
-            self.stdscr.addstr(1, int(self.grid_pos[0] + (self.grid_size[0] * self.cell_size[0]
-                               - len(self.texts['info'].splitlines()[0])) / 2) - 2,
-                               self.texts['info'])
-        except curses.error:
-            pass
 
         # score
-        try:
-            self.stdscr.addstr(self.grid_pos[1] + 5, self.grid_pos[0]
-                               + self.grid_size[0] * self.cell_size[0] + 5,
-                               f'{self.texts['score']}{self.score}')
-        except curses.error:
-            pass
-        
+        addstr_robust(self.stdscr, self.grid_pos[1] + 5,
+                      self.grid_pos[0] + self.grid_size[0] * self.cell_size[0] + 5,
+                      f'{self.texts['score']}{self.score}')
+
         # highscore
-        try:
-            self.stdscr.addstr(self.grid_pos[1] + 3, self.grid_pos[0]
-                               + self.grid_size[0] * self.cell_size[0] + 5,
-                               f'{self.texts['highscore']}{self.save_data['highscore']}')
-        except curses.error:
-            pass
+        addstr_robust(self.stdscr, self.grid_pos[1] + 3,
+                      self.grid_pos[0] + self.grid_size[0] * self.cell_size[0] + 5,
+                      f'{self.texts['highscore']}{self.save_data['highscore']}')
 
         # highest tile
-        try:
-            self.stdscr.addstr(self.grid_pos[1] + 1, self.grid_pos[0]
-                               + self.grid_size[0] * self.cell_size[0] + 5,
-                               f'{self.texts['tile_highscore']}{self.save_data['tile_highscore']}')
-        except curses.error:
-            pass
+        addstr_robust(self.stdscr, self.grid_pos[1] + 1,
+                      self.grid_pos[0] + self.grid_size[0] * self.cell_size[0] + 5,
+                      f'{self.texts['tile_highscore']}{self.save_data['tile_highscore']}')
         
+        # info
+        addstr_robust(self.stdscr, 1, self.grid_pos[0] + int((self.grid_size[0]
+                      * self.cell_size[0] - len(self.texts['info'])) / 2) - 2,
+                      self.texts['info'])
+
         # death
         if not self.game_state:
-            try:
-                self.stdscr.addstr(self.grid_pos[1] + self.grid_size[1] * self.cell_size[1] + 1,
-                                   int(self.grid_pos[0] + (self.grid_size[0] * self.cell_size[0]
-                                        - len(self.texts['death'].splitlines()[0])) / 2) - 1,
-                                   # splitlines()[0] to get the first line ^
-                                   # the code for the x coord above centers the text below the grid
-                                   self.texts['death'])
-            except curses.error:
-                pass
-
+            addstr_robust(self.stdscr, self.grid_pos[1] + self.grid_size[1]
+                          * self.cell_size[1] + 1, self.grid_pos[0] + int((self.grid_size[0]
+                          * self.cell_size[0] - len(self.texts['death'])) / 2) - 1,
+                          self.texts['death'])
+        
+        # win
         elif self.game_state == 2:
-            try:
-                self.stdscr.addstr(self.grid_pos[1] + self.grid_size[1] * self.cell_size[1] + 1,
-                                   int(self.grid_pos[0] + (self.grid_size[0] * self.cell_size[0]
-                                        - len(self.texts['win'].splitlines()[0])) / 2) - 2,
-                                   # splitlines()[0] to get the first line ^
-                                   # the code for the x coord above centers the text below the grid
-                                   self.texts['win'])
-            except curses.error:
-                pass
+            for dex, string in enumerate(self.texts['win']):
+                addstr_robust(self.stdscr, self.grid_pos[1] + self.grid_size[1]
+                              * self.cell_size[1] + dex + 1, self.grid_pos[0] + int((self.grid_size[0]
+                              * self.cell_size[0] - len(string)) / 2) - 2,
+                              string)
 
     def run(self: object) -> None:
 
         running = 1
         
         try:
+
             self._reset()
 
             self._render_text()
