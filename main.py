@@ -128,7 +128,8 @@ class Game(object):
         self.game_state = 1
 
     def render_text(self: object) -> None:
-
+        
+        # The try and excepts are to prevent curses from raising an error when it tries to write outside of the terminal
         try:
             self.stdscr.addstr(1, int(self.grid_pos[0] + (self.grid_size[0] * self.cell_size[0]
                                - len(self.texts['info'].splitlines()[0])) / 2) - 2,
