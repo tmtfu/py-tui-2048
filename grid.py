@@ -108,10 +108,7 @@ class Grid(object):
     def up(self: object,
            return_score: int=0) -> list or tuple:
 
-        grid = self._grid
-
-        grid_size = self._size
-        return_grid = copy.deepcopy(grid)
+        return_grid = copy.deepcopy(self._grid)
 
         score = 0
 
@@ -119,10 +116,10 @@ class Grid(object):
         # what I mean is that, if the number at a position is 1
         # the tile at that position on the real grid was combined during this iteration
         # tiles should only combine with tiles not combined during this iteration
-        combined_statuses = self._create_grid(grid_size)
+        combined_statuses = self._create_grid(self._size)
 
-        for x in range(grid_size[0]):
-            for y in range(1, grid_size[1]):
+        for x in range(self._size[0]):
+            for y in range(1, self._size[1]):
                 unchanged_value = return_grid[y][x]
                 current_y = y
                 # repeatedly checks if there is available space above
@@ -145,10 +142,7 @@ class Grid(object):
     def down(self: object,
              return_score: int=0) -> list or tuple:
 
-        grid = self._grid
-
-        grid_size = self._size
-        return_grid =  copy.deepcopy(grid)
+        return_grid =  copy.deepcopy(self._grid)
 
         score = 0
 
@@ -156,21 +150,21 @@ class Grid(object):
         # what I mean is that, if the number at a position is 1
         # the tile at that position on the real grid was combined during this iteration
         # tiles should only combine with tiles not combined during this iteration
-        combined_statuses = self._create_grid(grid_size)
+        combined_statuses = self._create_grid(self._size)
 
-        for x in range(grid_size[0]):
-            for y in range(grid_size[1] - 2, -1, -1):
+        for x in range(self._size[0]):
+            for y in range(self._size[1] - 2, -1, -1):
                 unchanged_value = return_grid[y][x]
                 current_y = y
                 # repeatedly checks if there is available space below
                 # moves the number if there is
-                while current_y < grid_size[1] - 1 and not return_grid[current_y + 1][x]:
+                while current_y < self._size[1] - 1 and not return_grid[current_y + 1][x]:
                     return_grid[current_y + 1][x] = unchanged_value
                     return_grid[current_y][x] = 0
                     current_y += 1
                 # checks for combining numbers
 
-                if (current_y < grid_size[1] - 1 and not combined_statuses[current_y + 1][x]
+                if (current_y < self._size[1] - 1 and not combined_statuses[current_y + 1][x]
                     and unchanged_value == return_grid[current_y + 1][x]):
 
                     return_grid[current_y + 1][x] = unchanged_value * 2
@@ -183,10 +177,7 @@ class Grid(object):
     def left(self: object,
              return_score: int=0) -> list or tuple:
 
-        grid = self._grid
-
-        grid_size = self._size
-        return_grid = copy.deepcopy(grid)
+        return_grid = copy.deepcopy(self._grid)
         
         score = 0
 
@@ -194,10 +185,10 @@ class Grid(object):
         # what I mean is that, if the number at a position is 1
         # the tile at that position on the real grid was combined during this iteration
         # tiles should only combine with tiles not combined during this iteration
-        combined_statuses = self._create_grid(grid_size)
+        combined_statuses = self._create_grid(self._size)
 
-        for y in range(grid_size[1]):
-            for x in range(1, grid_size[0]):
+        for y in range(self._size[1]):
+            for x in range(1, self._size[0]):
                 unchanged_value = return_grid[y][x]
                 current_x = x
                 # repeatedly checks if there is available space above
@@ -220,10 +211,7 @@ class Grid(object):
     def right(self: object,
               return_score: int=0) -> list or tuple:
 
-        grid = self._grid
-
-        grid_size = self._size 
-        return_grid = copy.deepcopy(grid)
+        return_grid = copy.deepcopy(self._grid)
 
         score = 0
 
@@ -231,21 +219,21 @@ class Grid(object):
         # what I mean is that, if the number at a position is 1
         # the tile at that position on the real grid was combined during this iteration
         # tiles should only combine with tiles not combined during this iteration
-        combined_statuses = self._create_grid(grid_size)
+        combined_statuses = self._create_grid(self._size)
 
-        for y in range(grid_size[1]):
-            for x in range(grid_size[0] - 2, -1, -1):
+        for y in range(self._size[1]):
+            for x in range(self._size[0] - 2, -1, -1):
                 unchanged_value = return_grid[y][x]
                 current_x = x
                 # repeatedly checks if there is available space below
                 # moves the number if there is
-                while current_x < grid_size[0] - 1 and not return_grid[y][current_x + 1]:
+                while current_x < self._size[0] - 1 and not return_grid[y][current_x + 1]:
                     return_grid[y][current_x + 1] = unchanged_value
                     return_grid[y][current_x] = 0
                     current_x += 1
 
                 # checks for combining numbers
-                if (current_x < grid_size[0] - 1 and not combined_statuses[y][current_x + 1]
+                if (current_x < self._size[0] - 1 and not combined_statuses[y][current_x + 1]
                     and unchanged_value == return_grid[y][current_x + 1]):
 
                     return_grid[y][current_x + 1] = unchanged_value * 2

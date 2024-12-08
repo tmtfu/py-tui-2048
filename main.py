@@ -79,7 +79,6 @@ class Game(object):
                 except curses.error:
                     pass
 
-
     def handle_key_input(self: object,
                          key: str) -> None:
 
@@ -119,8 +118,6 @@ class Game(object):
 
         if key == 'r':
             self.reset()
-
-        
 
     def reset(self: object) -> None:
 
