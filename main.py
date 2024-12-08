@@ -26,7 +26,7 @@ class Game(object):
                 curses.init_pair(i, i, -1);
             
             self.base = 2
-            self.spawn_choices = (self.base, self.base**2)
+            self.spawn_choices = tuple(self.base**i for i in range(1, 3))
             self.spawn_rates = (90, 10)
             self.winning_power = 11
 
@@ -45,7 +45,7 @@ class Game(object):
             self.game_state = 1
 
             self.save_data = {'highscore': 0,
-                              'tile_highscore': 2}
+                              'tile_highscore': self.spawn_choices[0]}
 
             try:
                 with open('save.json', 'r', encoding='UTF-8') as save_file:
