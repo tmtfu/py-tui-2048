@@ -7,16 +7,18 @@ import grid
 
 class Game(object):
     
-    def __init__(self: object,
-                 stdscr: curses.window) -> None:
+    def __init__(self: object) -> None:
 
         # Note: I put try/except statements after .addstr() because
         # when you resize to small, it will do raise an error
-
+        
+        self.stdscr = curses.initscr()
+        self.stdscr.keypad(1)
+        curses.noecho()
+        curses.cbreak()
         curses.curs_set(0)
         curses.start_color()
         curses.use_default_colors()
-        self.stdscr = stdscr
 
         for i in range(curses.COLORS):
             curses.init_pair(i, i, -1);
@@ -79,44 +81,43 @@ class Game(object):
 
 
     def handle_key_input(self: object,
-                         key_code: int) -> None:
+                         key: str) -> None:
 
         original_grid = self.grid.grid
 
-        name = curses.keyname(key_code)
         if self.game_state == 1 or self.game_state == 3:
-            if str(name) in ("b'w'", "b'k'", "b'KEY_UP'"):
+            if key in ('w', 'k', 'KEY_UP'):
                 return_value = self.grid.up(1)
                 self.grid.grid = return_value[0]
                 self.score += return_value[1]
                 if self.grid.grid != original_grid:
                     self.grid.spawn_new_numbers(1, self.spawn_choices, self.spawn_rates)
 
-            elif str(name) in ("b's'", "b'j'", "b'KEY_DOWN'"):
+            elif key in ('s', 'j', 'KEY_DOWN'):
                 return_value = self.grid.down(1)
                 self.grid.grid = return_value[0]
                 self.score += return_value[1]
                 if self.grid.grid != original_grid:
                     self.grid.spawn_new_numbers(1, self.spawn_choices, self.spawn_rates)
 
-            elif str(name) in ("b'a'", "b'h'", "b'KEY_LEFT'"):
+            elif key in ('a', 'h', 'KEY_LEFT'):
                 return_value = self.grid.left(1)
                 self.grid.grid = return_value[0]
                 self.score += return_value[1]
                 if self.grid.grid != original_grid:
                     self.grid.spawn_new_numbers(1, self.spawn_choices, self.spawn_rates)
 
-            elif str(name) in ("b'd'", "b'l'", "b'KEY_RIGHT'"):
+            elif key in ('d', 'l', 'KEY_RIGHT'):
                 return_value = self.grid.right(1)
                 self.grid.grid = return_value[0]
                 self.score += return_value[1]
                 if self.grid.grid != original_grid:
                     self.grid.spawn_new_numbers(1, self.spawn_choices, self.spawn_rates)
         
-        elif self.game_state and str(name) == "b'c'":
+        elif self.game_state and key == 'c':
             self.game_state = 3
 
-        if str(name) == "b'r'":
+        if key == 'r':
             self.reset()
 
         
@@ -196,7 +197,7 @@ class Game(object):
         
         try:
             while running:
-                key = self.stdscr.getch()
+                key = self.stdscr.getkey()
                 self.handle_key_input(key)
 
                 if (self.grid.up() == self.grid.grid
@@ -228,6 +229,7 @@ class Game(object):
 
         except KeyboardInterrupt:
             self.save_save_data_to_file()
+
             curses.endwin()
 
             print(f'{self.texts['stats']}',
@@ -237,6 +239,5 @@ class Game(object):
 
 
 if __name__ == '__main__':
-    stdscr = curses.initscr()
-    Game(stdscr).run()
+    Game().run()
 

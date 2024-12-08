@@ -61,7 +61,6 @@ class Grid(object):
                     row.append(0)
         else:
             for row in self._grid:
-                print(row)
                 for x in range(self._size[0] - 1, value[0] - 1, -1):
                     del row[x]
 
@@ -171,7 +170,7 @@ class Grid(object):
                     current_y += 1
                 # checks for combining numbers
 
-                if (current_y < grid_size[1] - 1 and not combined_statuses[y][current_y + 1]
+                if (current_y < grid_size[1] - 1 and not combined_statuses[current_y + 1][x]
                     and unchanged_value == return_grid[current_y + 1][x]):
 
                     return_grid[current_y + 1][x] = unchanged_value * 2
