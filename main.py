@@ -109,7 +109,7 @@ class Game(object):
 
         original_grid = self._grid.grid
 
-        if self._game_state == 1 or self.game_state == 3:
+        if self._game_state == 1 or self._game_state == 3:
             if key in ('w', 'k', 'KEY_UP'):
                 return_value = self._grid.up(1)
                 self._grid.grid = return_value[0]
