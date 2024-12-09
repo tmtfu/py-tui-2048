@@ -4,8 +4,7 @@ import curses
 import modules.grid as grid
 from modules.utils import addstr_robust
 
-# v2.0.1
-
+# 120 characters per line max no exceptions
 class Game(object):
     
     def __init__(self: object) -> None:
@@ -71,9 +70,11 @@ class Game(object):
                 value_type = type(value)
                 if value_type != types[key]:
                     if types[key] == list:
-                        raise ValueError(f'value for "{key}" in text.json should be a list of str lines, not {types[key]}')
+                        raise ValueError(f'value for "{key}" in text.json should ' \
+                                         f'be a list of str lines, not {types[key]}')
                     else:
-                        raise ValueError(f'value for "{key}" in text.json should be of type {types[key]}, not {value_type}')
+                        raise ValueError(f'value for "{key}" in text.json should ' \
+                                         f'be of type {types[key]}, not {value_type}')
 
         finally:
             curses.endwin()
@@ -91,15 +92,15 @@ class Game(object):
                 item_str = str(item)
                 try:
                     self._stdscr.addstr(self._grid_pos[1] + y * self._cell_size[1],
-                                       self._grid_pos[0] + x * self._cell_size[0],
+                                        self._grid_pos[0] + x * self._cell_size[0],
 
-                                       # the * (self._cell_size[0] - 1) is to clear numbers 
-                                       item_str + ' ' * (self._cell_size[0] - len(item_str))
-                                       if item else self._texts['empty_tile'] + ' ' * 
-                                         (self._cell_size[0] - len(self._texts['empty_tile'])),
+                                        # the * (self._cell_size[0] - 1) is to clear numbers 
+                                        item_str + ' ' * (self._cell_size[0] - len(item_str))
+                                        if item else self._texts['empty_tile'] + ' ' * 
+                                          (self._cell_size[0] - len(self._texts['empty_tile'])),
 
-                                       curses.color_pair(
-                                           int(min(math.log(item, self._base), 7) if item else 0)))
+                                        curses.color_pair(
+                                            int(min(math.log(item, self._base), 7) if item else 0)))
                 except curses.error:
                     pass
 
