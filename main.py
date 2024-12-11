@@ -147,7 +147,7 @@ class Game(object):
     def _reset(self: object) -> None:
 
         self._grid.reset()
-        self._grid.spawn_new_numbers(2, (self._spawn_choices[0],))
+        self._grid.spawn_new_numbers(2, self._spawn_choices, self._spawn_rates)
         
         self._score = 0
         self._game_state = 1
